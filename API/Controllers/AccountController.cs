@@ -18,20 +18,21 @@ public class AccountController(DataContext context, ITokenService tokenService):
 
         if(await UserExits(registerDto.UserName)) return BadRequest("Username is taken");
 
-        using var hmac = new HMACSHA512();
-        var newUser = new AppUser{
-            UserName = registerDto.UserName.ToLower(),
-            PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password)),
-            PasswordSalt = hmac.Key
-        };
+        return Ok();
+        // using var hmac = new HMACSHA512();
+        // var newUser = new AppUser{
+        //     UserName = registerDto.UserName.ToLower(),
+        //     PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password)),
+        //     PasswordSalt = hmac.Key
+        // };
        
-        context.Users.Add(newUser);
-        await context.SaveChangesAsync();
+        // context.Users.Add(newUser);
+        // await context.SaveChangesAsync();
 
-        return new UserDto{
-            Username = newUser.UserName,
-            Token = tokenService.CreateToken(newUser)
-        };        
+        // return new UserDto{
+        //     Username = newUser.UserName,
+        //     Token = tokenService.CreateToken(newUser)
+        // };        
     }
 
     [HttpPost("login")]
