@@ -20,7 +20,8 @@ public class TokenService(IConfiguration config) : ITokenService
 
         //making claim for username
         var claims = new List<Claim>{
-            new(ClaimTypes.NameIdentifier, user.UserName)
+            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new(ClaimTypes.Name, user.UserName)
         };
 
         //creating Credentials for the created key and algoritm used for creating token
