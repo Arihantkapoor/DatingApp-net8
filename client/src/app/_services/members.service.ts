@@ -7,6 +7,7 @@ import { Photo } from '../_models/photo';
 import { PaginatedResult } from '../_models/pagination';
 import { UserParams } from '../_models/userParams';
 import { AccountService } from './account.service';
+import { setPaginatedResponse, setPaginationHeaders } from './paginationHelper';
 
 @Injectable({
   providedIn: 'root'
@@ -15,7 +16,6 @@ export class MembersService {
   private http = inject(HttpClient);
   baseUrl = environment.apiUrl;
   private accountService = inject(AccountService);
-  // members = signal<Member[]>([]);
   paginatedResult = signal<PaginatedResult<Member[]>|null>(null);
   memberCache = new Map();
   userParams = signal<UserParams>(new UserParams(this.accountService.currentUser()));
@@ -28,9 +28,9 @@ export class MembersService {
 
    const response = this.memberCache.get(Object.values(this.userParams).join('-'));
 
-   if(response) return this.setPaginatedResponse(response);
+   if(response) return setPaginatedResponse(response, this.paginatedResult);
 
-    let params = this.setPaginationHeaders(this.userParams().pageNumber, this.userParams().pageSize);
+    let params = setPaginationHeaders(this.userParams().pageNumber, this.userParams().pageSize);
 
     params = params.append('minAge',this.userParams().minAge);
     params = params.append('maxAge',this.userParams().maxAge);
@@ -39,18 +39,12 @@ export class MembersService {
 
    return this.http.get<Member[]>(this.baseUrl + 'users', {observe: 'response', params}).subscribe({
     next: response=> {
-      this.setPaginatedResponse(response);
+      setPaginatedResponse(response, this.paginatedResult);
       this.memberCache.set(Object.values(this.userParams()).join('-'), response);
     }
    })
   }
 
-  private setPaginatedResponse(response: HttpResponse<Member[]>){
-    this.paginatedResult.set({
-      items: response.body as Member[],
-      pagination: JSON.parse(response.headers.get('Pagination')!)
-    })
-  }
 
   getMember(username: string){
     const member: Member = [...this.memberCache.values()]
@@ -64,50 +58,16 @@ export class MembersService {
 
   updateMember(member: Member){
     return this.http.put(this.baseUrl + 'users/', member).pipe(
-      // tap(()=>{
-      //   this.members.update(members=>members.map(m=>m.username===member.username
-      //      ? member:m))
-      // })
     );
   }
 
   setMainPhoto(photo: Photo){
     return this.http.put(this.baseUrl + 'users/set-main-photo/' + photo.id, {}).pipe(
-      // tap(()=>{
-      //   this.members.update(members=>members.map(m=>{
-      //     if(m.photos.includes(photo)){
-      //       m.photoUrl = photo.url;
-      //     }
-      //     return m;
-      //   }))
-      // })
     )
   }
 
   deletePhoto(photo: Photo){
     return this.http.delete(this.baseUrl + 'users/delete-photo/' + photo.id).pipe(
-      // tap(()=>{
-      //   this.members.update(members=>members.map(m=>{
-      //     if(m.photos.includes(photo)){
-      //       m.photos = m.photos.filter(x=>x.id!==photo.id);
-      //     }
-      //     return m;
-      //   }))
-      // })
     )
-
   }
-
-  private setPaginationHeaders(pageNumber: number, pageSize: number){
-    let params = new HttpParams();
-
-    if(pageNumber && pageSize){
-      params = params.append('pageNumber',pageNumber);
-      params = params.append('pageSize',pageSize);
-    }
-
-    return params;
-  }
-
- 
 }

@@ -17,7 +17,7 @@
             "name": "C#: API Debug",
             "type": "dotnet",
             "request": "launch",
-            "projectPath": "${workspaceFolder}/API.csproj"
+            "projectPath": "${workspaceFolder}/API/API.csproj"
         },
         //this is for attaching to a currently running process
         {
